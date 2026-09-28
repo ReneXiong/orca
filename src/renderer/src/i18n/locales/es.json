@@ -2777,7 +2777,9 @@
             "a7e2fd2699": "abre un issue",
             "5c8ce20be6": "Si esto persiste, por favor",
             "cc6d997c65": "Reinicia el servicio del terminal desde aquí para borrar el estado obsoleto.",
-            "remoteTerminalClosed": "La terminal remota se cerró."
+            "remoteTerminalClosed": "La terminal remota se cerró.",
+            "ptyAllocationLimit": "Tu sistema no puede asignar más dispositivos pty. Cierra algunas terminales que no estés usando, en Orca o en otro programa, y vuelve a intentarlo.",
+            "terminalProcessLimit": "Tu sistema no puede iniciar otro proceso de terminal. Cierra las terminales que no uses o sal de los procesos que no necesites y vuelve a intentarlo."
           },
           "TerminalProcessExitOverlay": {
             "capacityTitle": "Se alcanzó el límite de consolas de Git Bash",
@@ -14926,6 +14928,7 @@
   "components": {
     "native-chat": {
       "writeNotice": {
+        "notDoneReadHistory": "No se pudo cargar el historial de este chat.",
         "notDoneSend": "Su mensaje no se envió.",
         "tryAgainComposerSend": "Vuelva a enviarlo.",
         "notDoneStop": "El agente no se detuvo.",
@@ -14940,8 +14943,39 @@
         "outcomeUnknown": "Orca no pudo confirmar qué pasó. Revise el chat.",
         "questionChanged": "Esta pregunta ya se respondió o ha cambiado.",
         "historyUnreadable": "Orca no pudo leer el historial guardado de este chat.",
+        "historyUnusable": "No se puede cargar este chat.",
+        "historyUnavailable": "Orca no pudo abrir el historial de este chat en este momento.",
         "unsupported": "La versión de Orca que ejecuta este chat no lo admite. Actualice Orca y vuelva a intentarlo.",
-        "unreachable": "Orca no pudo comunicarse con el agente."
+        "unreachable": "Orca no pudo comunicarse con el agente.",
+        "recordFailed": "Orca no pudo registrarlo en el historial de este chat.",
+        "conversationCleared": "Esta conversación se borró.",
+        "openCurrentConversation": "Abra la conversación actual para continuar.",
+        "clearUnfinished": "El último /clear no terminó.",
+        "commandRunning": "Todavía se está ejecutando un /compact o /clear.",
+        "waitForCommand": "Espere a que termine el /compact o /clear.",
+        "agentStarting": "El agente todavía se está iniciando.",
+        "waitForStart": "Espere a que el agente termine de iniciarse.",
+        "turnActive": "El agente todavía está respondiendo.",
+        "waitForTurn": "Espere a que el agente termine de responder o deténgalo.",
+        "promptPending": "El agente está esperando una respuesta a una pregunta o aprobación.",
+        "answerFirst": "Responda primero a la pregunta o aprobación.",
+        "backgroundTasksRunning": "Todavía hay tareas en segundo plano en ejecución.",
+        "waitForBackgroundTasks": "Espere a que terminen las tareas en segundo plano.",
+        "messagesUnsettled": "Un mensaje que envió antes todavía no se ha confirmado.",
+        "settleEarlierMessage": "Espere a que se entregue su mensaje anterior o vuelva a intentarlo.",
+        "optionRejected": "El agente no aceptó este ajuste.",
+        "goalsUnsupported": "Este agente no admite objetivos.",
+        "agentRefused": "El agente lo rechazó.",
+        "ownerUnproven": "Orca no ha confirmado que el agente anterior de este chat se haya detenido.",
+        "reopenChat": "Vuelva a abrir el chat para comprobarlo de nuevo.",
+        "terminalAgentHoldsChat": "Este chat sigue abierto en un agente de terminal.",
+        "quitTerminalAgent": "Cierre ese agente para continuar el chat aquí.",
+        "hostReconciling": "Orca todavía está comprobando este chat después de reiniciarse.",
+        "waitMoment": "Espere un momento.",
+        "recordUnreadable": "Orca no pudo leer el estado guardado de este chat.",
+        "chatNotFound": "La versión de Orca que ejecuta este chat no tiene ningún registro de él.",
+        "startNewChat": "Inicie un chat nuevo para continuar.",
+        "tryAgain": "Vuelva a intentarlo."
       },
       "composer": {
         "imageUnsupported": "Este agente no admite pegar imágenes.",
@@ -15020,7 +15054,8 @@
         },
         "error": {
           "title": "No se pudo cargar la conversación",
-          "subtitle": "No se pudo leer la transcripción. Vuelva a la terminal para seguir trabajando."
+          "subtitle": "No se pudo leer la transcripción. Vuelva a la terminal para seguir trabajando.",
+          "retryingSubtitle": "No se pudo leer la transcripción. Orca sigue intentando cargarla."
         },
         "pairHost": "Empareje un host para ver el historial de chat del agente.",
         "notAgent": {
@@ -15273,6 +15308,7 @@
       "needsInput": "necesita información",
       "working": "trabajando",
       "stopped": "detenido",
+      "failed": "fallido",
       "finished": "finalizado"
     }
   },

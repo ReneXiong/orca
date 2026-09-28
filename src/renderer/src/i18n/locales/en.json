@@ -151,7 +151,8 @@
         "portsToggleDescription": "Show live workspace ports. Click it for workspace-scoped ports and external listeners.",
         "antigravityToggleDescription": "Show Antigravity subscription usage for the active workspace.",
         "grokToggleDescription": "Show Grok subscription credit usage when signed in via Grok CLI.",
-        "cursorToggleDescription": "Show Cursor plan usage when signed in through cursor-agent or Cursor IDE."
+        "cursorToggleDescription": "Show Cursor plan usage when signed in through cursor-agent or Cursor IDE.",
+        "zcodeToggleDescription": "Show ZCode Coding Plan quota usage."
       },
       "menuBarIcon": {
         "title": "Show Menu Bar Icon",
@@ -609,6 +610,7 @@
           "da41abbdd4": "Ante",
           "060d152fb5": "Trae",
           "muse_label": "Muse",
+          "dsh_label": "DeepSeek Harness",
           "zcode_label": "ZCode",
           "d443a47995": "Prime Agent",
           "mimo_code_label": "MiMo Code",
@@ -3224,7 +3226,9 @@
             "e16012e31e": "The terminal daemon that owned this session exited, so the session and its scrollback could not be recovered. Open a new terminal to continue.",
             "sessionUnavailable": "Orca couldn't reattach to this pane's terminal session on the host. Open a new terminal to continue.",
             "sourceRestoring": "Reconnecting this terminal — its output is being re-established. The session is still running.",
-            "remoteTerminalClosed": "Remote terminal was closed."
+            "remoteTerminalClosed": "Remote terminal was closed.",
+            "ptyAllocationLimit": "Your system cannot allocate any more pty devices. Close some terminals you are not using, in Orca or another program, then try again.",
+            "terminalProcessLimit": "Your system cannot start another terminal process. Close unused terminals or quit unused processes, then try again."
           },
           "TerminalProcessExitOverlay": {
             "capacityTitle": "Git Bash console limit reached",
@@ -3820,7 +3824,8 @@
             "floatingTerminalNewActivity": "{{label}}, new activity",
             "codexSignInSuccess": "Signed in to Codex",
             "codexSignInError": "Codex sign-in failed. Please try again.",
-            "cursorUsageMenu": "Cursor Usage"
+            "cursorUsageMenu": "Cursor Usage",
+            "zcodeUsageMenu": "ZCode Usage"
           },
           "StatusBarUsageEmptyCta": {
             "828c764a79": "Connect an account",
@@ -3967,6 +3972,7 @@
             }
           },
           "tooltip": {
+            "zcode": { "mcp": "MCP" },
             "cedb7b99e3": "% used",
             "6d6df77f41": "No data available",
             "7f7f208060": "Monthly",
@@ -9357,6 +9363,11 @@
             "c5b9f8d1e3": "xai",
             "usagePercentageDisplayTitle": "Usage percentages",
             "usagePercentageDisplayDescription": "Choose whether provider limits show the percentage used or remaining.",
+            "zcodeUsageTitle": "ZCode Usage",
+            "zcodeUsageDescription": "Show ZCode Coding Plan quota usage in the status bar.",
+            "zcode": "zcode",
+            "zai": "zai",
+            "glm": "glm",
             "tray": {
               "tray": "tray",
               "system": "system tray",
@@ -17466,6 +17477,7 @@
     },
     "native-chat": {
       "writeNotice": {
+        "notDoneReadHistory": "This chat's history couldn't be loaded.",
         "notDoneSend": "Your message was not sent.",
         "tryAgainComposerSend": "Send it again.",
         "notDoneStop": "The agent wasn't stopped.",
@@ -17480,8 +17492,39 @@
         "outcomeUnknown": "Orca couldn't confirm what happened. Check the chat.",
         "questionChanged": "This question was already answered or has changed.",
         "historyUnreadable": "Orca couldn't read this chat's saved history.",
+        "historyUnusable": "Unable to load this chat.",
+        "historyUnavailable": "Orca couldn't open this chat's history right now.",
         "unsupported": "The Orca running this chat doesn't support this. Update Orca, then try again.",
-        "unreachable": "Orca couldn't reach the agent."
+        "unreachable": "Orca couldn't reach the agent.",
+        "recordFailed": "Orca couldn't record it in this chat's history.",
+        "conversationCleared": "This conversation has been cleared.",
+        "openCurrentConversation": "Open the current conversation to continue.",
+        "clearUnfinished": "The last /clear didn't finish.",
+        "commandRunning": "A /compact or /clear is still running.",
+        "waitForCommand": "Wait for the /compact or /clear to finish.",
+        "agentStarting": "The agent is still starting.",
+        "waitForStart": "Wait for the agent to finish starting.",
+        "turnActive": "The agent is still responding.",
+        "waitForTurn": "Wait for the agent to finish responding, or stop it.",
+        "promptPending": "The agent is waiting for an answer to a question or approval.",
+        "answerFirst": "Answer the question or approval first.",
+        "backgroundTasksRunning": "Background tasks are still running.",
+        "waitForBackgroundTasks": "Wait for the background tasks to finish.",
+        "messagesUnsettled": "A message you sent earlier hasn't been confirmed yet.",
+        "settleEarlierMessage": "Wait for your earlier message to go through, or retry it.",
+        "optionRejected": "The agent didn't accept this setting.",
+        "goalsUnsupported": "This agent doesn't support goals.",
+        "agentRefused": "The agent turned this down.",
+        "ownerUnproven": "Orca hasn't confirmed that this chat's previous agent stopped.",
+        "reopenChat": "Reopen the chat to check again.",
+        "terminalAgentHoldsChat": "This chat is still open in a terminal agent.",
+        "quitTerminalAgent": "Quit that agent to continue the chat here.",
+        "hostReconciling": "Orca is still checking on this chat after restarting.",
+        "waitMoment": "Wait a moment.",
+        "recordUnreadable": "Orca couldn't read this chat's saved state.",
+        "chatNotFound": "The Orca running this chat has no record of it.",
+        "startNewChat": "Start a new chat to continue.",
+        "tryAgain": "Try again."
       },
       "taskList": {
         "title": "Tasks",
@@ -17716,7 +17759,8 @@
         },
         "error": {
           "title": "Could not load conversation",
-          "subtitle": "The transcript could not be read. Toggle back to the terminal to keep working."
+          "subtitle": "The transcript could not be read. Toggle back to the terminal to keep working.",
+          "retryingSubtitle": "The transcript could not be read. Orca keeps trying to load it."
         },
         "pairHost": "Pair a host to view agent chat history.",
         "notAgent": {
@@ -18361,6 +18405,7 @@
       "needsInput": "needs input",
       "working": "working",
       "stopped": "stopped",
+      "failed": "failed",
       "finished": "finished"
     }
   },

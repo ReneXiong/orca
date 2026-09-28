@@ -3068,7 +3068,9 @@
             "42b283ecfc": "ホストが保存されたセッションを確認できなかったため、Orca はこのターミナルを安全に再接続できませんでした。 Orca は保存されたセッションを変更せずに残しました。今すぐ再接続を試みるには、「再試行」をクリックします。それでも再接続できない場合は、新規ターミナルを開きます。",
             "e16012e31e": "このセッションを所有していたターミナルデーモンが終了したため、セッションとそのスクロールバックを回復できませんでした。続行するには、新規ターミナルを開いてください。",
             "sessionUnavailable": "Orca はホスト上のこのペインのターミナルセッションに再接続できませんでした。続行するには、新規ターミナルを開いてください。",
-            "sourceRestoring": "このターミナルを再接続しています — その出力が再確立されています。セッションはまだ実行中です。"
+            "sourceRestoring": "このターミナルを再接続しています — その出力が再確立されています。セッションはまだ実行中です。",
+            "ptyAllocationLimit": "システムはこれ以上 pty デバイスを割り当てられません。Orca または他のプログラムで使っていないターミナルをいくつか閉じてから、もう一度お試しください。",
+            "terminalProcessLimit": "システムはこれ以上ターミナルプロセスを起動できません。使っていないターミナルを閉じるか、不要なプロセスを終了してから、もう一度お試しください。"
           },
           "TerminalProcessExitOverlay": {
             "capacityTitle": "Git Bash のコンソール上限に達しました",
@@ -17345,6 +17347,7 @@
     },
     "native-chat": {
       "writeNotice": {
+        "notDoneReadHistory": "このチャットの履歴を読み込めませんでした。",
         "notDoneSend": "メッセージは送信されませんでした。",
         "tryAgainComposerSend": "もう一度送信してください。",
         "notDoneStop": "Agent は停止されませんでした。",
@@ -17359,8 +17362,39 @@
         "outcomeUnknown": "Orca は何が起きたかを確認できませんでした。チャットを確認してください。",
         "questionChanged": "この質問はすでに回答済みか、変更されています。",
         "historyUnreadable": "Orca はこのチャットの保存済み履歴を読み取れませんでした。",
+        "historyUnusable": "このチャットを読み込めません。",
+        "historyUnavailable": "Orca は現在このチャットの履歴を開けませんでした。",
         "unsupported": "このチャットを実行している Orca はこの操作に対応していません。Orca を更新してから、もう一度お試しください。",
-        "unreachable": "Orca は Agent に接続できませんでした。"
+        "unreachable": "Orca は Agent に接続できませんでした。",
+        "recordFailed": "Orca はこのチャットの履歴に記録できませんでした。",
+        "conversationCleared": "この会話はクリアされました。",
+        "openCurrentConversation": "続けるには、現在の会話を開いてください。",
+        "clearUnfinished": "前回の /clear は完了しませんでした。",
+        "commandRunning": "/compact または /clear がまだ実行中です。",
+        "waitForCommand": "/compact または /clear が終わるまでお待ちください。",
+        "agentStarting": "Agent はまだ起動中です。",
+        "waitForStart": "Agent の起動が終わるまでお待ちください。",
+        "turnActive": "Agent はまだ応答中です。",
+        "waitForTurn": "Agent の応答が終わるまで待つか、Agent を停止してください。",
+        "promptPending": "Agent は質問または承認への回答を待っています。",
+        "answerFirst": "先に質問または承認に回答してください。",
+        "backgroundTasksRunning": "バックグラウンドタスクがまだ実行中です。",
+        "waitForBackgroundTasks": "バックグラウンドタスクが終わるまでお待ちください。",
+        "messagesUnsettled": "以前に送信したメッセージがまだ確認されていません。",
+        "settleEarlierMessage": "以前のメッセージが届くまで待つか、再試行してください。",
+        "optionRejected": "Agent はこの設定を受け入れませんでした。",
+        "goalsUnsupported": "この Agent は目標に対応していません。",
+        "agentRefused": "Agent がこれを拒否しました。",
+        "ownerUnproven": "Orca は、このチャットの以前の Agent が停止したことをまだ確認できていません。",
+        "reopenChat": "もう一度確認するには、チャットを開き直してください。",
+        "terminalAgentHoldsChat": "このチャットはまだターミナルの Agent で開かれています。",
+        "quitTerminalAgent": "ここでチャットを続けるには、その Agent を終了してください。",
+        "hostReconciling": "Orca は再起動後、このチャットをまだ確認しています。",
+        "waitMoment": "しばらくお待ちください。",
+        "recordUnreadable": "Orca はこのチャットの保存済みの状態を読み取れませんでした。",
+        "chatNotFound": "このチャットを実行している Orca には、このチャットの記録がありません。",
+        "startNewChat": "続けるには、新しいチャットを開始してください。",
+        "tryAgain": "もう一度お試しください。"
       },
       "composer": {
         "imageUnsupported": "この Agent では画像の貼り付けはサポートされていません。",
@@ -17518,7 +17552,8 @@
         },
         "error": {
           "title": "会話を読み込めませんでした",
-          "subtitle": "トランスクリプトを読み取ることができませんでした。作業を続けるには、ターミナルに切り替えてください。"
+          "subtitle": "トランスクリプトを読み取ることができませんでした。作業を続けるには、ターミナルに切り替えてください。",
+          "retryingSubtitle": "トランスクリプトを読み取ることができませんでした。Orca は読み込みを再試行し続けます。"
         },
         "pairHost": "ホストをペアリングして、Agent のチャット履歴を表示します。",
         "notAgent": {
@@ -18257,6 +18292,7 @@
       "needsInput": "入力待ち",
       "working": "処理中",
       "stopped": "停止",
+      "failed": "失敗",
       "finished": "完了"
     }
   },
