@@ -23,6 +23,7 @@ let authPath: string
 
 beforeEach(async () => {
   vi.resetAllMocks()
+  vi.stubEnv('COMMAND_CODE_API_KEY', '')
   directory = await mkdtemp(join(tmpdir(), 'orca-command-code-'))
   authPath = join(directory, 'auth.json')
   await writeFile(authPath, JSON.stringify({ apiKey: 'test-secret-one', userId: 'private-user' }))
@@ -30,6 +31,7 @@ beforeEach(async () => {
 })
 
 afterEach(async () => {
+  vi.unstubAllEnvs()
   await rm(directory, { recursive: true, force: true })
 })
 
@@ -53,6 +55,46 @@ describe('Command Code CLI usage', () => {
     )
     expect(ensureElectronProxyFromEnvironment).toHaveBeenCalledOnce()
     expect(JSON.stringify(result)).not.toMatch(/test-secret-one|private-user|auth.json/)
+  })
+
+  it('uses an API key without a CLI login file', async () => {
+    await rm(authPath)
+    vi.stubEnv('COMMAND_CODE_API_KEY', 'test-env-secret')
+    const result = await fetchCommandCodeRateLimits({ authPath })
+    expect(result.status).toBe('ok')
+    expect(result.usageMetadata?.credentialSource).toBe('COMMAND_CODE_API_KEY on this host')
+    expect(vi.mocked(net.fetch).mock.calls[0]?.[1]?.headers).toMatchObject({
+      Authorization: 'Bearer test-env-secret'
+    })
+    expect(JSON.stringify(result)).not.toContain('test-env-secret')
+  })
+
+  it('prefers the environment key and never retries with the saved account on rejection', async () => {
+    vi.stubEnv('COMMAND_CODE_API_KEY', 'test-env-secret')
+    vi.mocked(net.fetch).mockResolvedValue(new Response('', { status: 401 }))
+    expect((await fetchCommandCodeRateLimits({ authPath })).status).toBe('error')
+    expect(net.fetch).toHaveBeenCalledOnce()
+    expect(vi.mocked(net.fetch).mock.calls[0]?.[1]?.headers).toMatchObject({
+      Authorization: 'Bearer test-env-secret'
+    })
+  })
+
+  it.each([' ', 'line\nbreak'])(
+    'does not fall back to a saved login for a malformed environment key',
+    async (key) => {
+      vi.stubEnv('COMMAND_CODE_API_KEY', key)
+      expect((await fetchCommandCodeRateLimits({ authPath })).status).toBe('unavailable')
+      expect(net.fetch).not.toHaveBeenCalled()
+    }
+  )
+
+  it('discards a response after the environment selects a different account', async () => {
+    vi.stubEnv('COMMAND_CODE_API_KEY', 'test-env-secret')
+    vi.mocked(net.fetch).mockImplementation(async () => {
+      vi.stubEnv('COMMAND_CODE_API_KEY', 'test-env-new')
+      return Response.json(credits)
+    })
+    expect((await fetchCommandCodeRateLimits({ authPath })).status).toBe('unavailable')
   })
 
   it.each([
@@ -149,6 +191,61 @@ describe('Command Code CLI usage', () => {
       )
     }
   )
+
+  it('enriches quota with a monthly estimate, ignoring purchased and free balances', async () => {
+    const now = Date.now()
+    vi.mocked(net.fetch)
+      .mockResolvedValueOnce(
+        Response.json({
+          ...credits,
+          credits: { monthlyCredits: 4, purchasedCredits: 100, freeCredits: 50 }
+        })
+      )
+      .mockResolvedValueOnce(
+        Response.json({
+          success: true,
+          data: {
+            planId: 'individual-go',
+            status: 'active',
+            quantity: 1,
+            orgId: null,
+            currentPeriodStart: new Date(now - 86400000).toISOString(),
+            currentPeriodEnd: new Date(now + 29 * 86400000).toISOString()
+          }
+        })
+      )
+    const result = await fetchCommandCodeRateLimits({ authPath })
+    expect(result).toMatchObject({
+      status: 'ok',
+      planType: 'Go',
+      monthly: { estimated: true, usedPercent: 60 }
+    })
+    expect(result.session?.usedPercent).toBe(20)
+    expect(vi.mocked(net.fetch).mock.calls[1]?.[0]).toBe(
+      'https://api.commandcode.ai/alpha/billing/subscriptions'
+    )
+  })
+
+  it('keeps measured windows if the subscription request fails', async () => {
+    vi.mocked(net.fetch)
+      .mockResolvedValueOnce(Response.json(credits))
+      .mockRejectedValueOnce(new Error('test-secret-one'))
+    const result = await fetchCommandCodeRateLimits({ authPath })
+    expect(result.status).toBe('ok')
+    expect(result.session?.usedPercent).toBe(20)
+    expect(result.monthly).toBeUndefined()
+    expect(JSON.stringify(result)).not.toContain('test-secret-one')
+  })
+
+  it('rechecks the selected key after subscription enrichment', async () => {
+    vi.mocked(net.fetch)
+      .mockResolvedValueOnce(Response.json(credits))
+      .mockImplementationOnce(async () => {
+        await rm(authPath)
+        return Response.json({ success: true, data: null })
+      })
+    expect((await fetchCommandCodeRateLimits({ authPath })).status).toBe('unavailable')
+  })
 
   it.each(['switch', 'logout'])('discards an in-flight snapshot after %s', async (action) => {
     vi.mocked(net.fetch).mockImplementation(async () => {

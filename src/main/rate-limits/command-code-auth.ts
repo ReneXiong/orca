@@ -6,16 +6,41 @@ import { join } from 'node:path'
 
 const IDENTITY_KEY = randomBytes(32)
 
-export type CommandCodeCredentials = { apiKey: string; identity: string }
+export type CommandCodeCredentials = {
+  apiKey: string
+  identity: string
+  source: 'environment' | 'cli-login'
+}
 
 export function getCommandCodeAuthPath(): string {
   return join(homedir(), '.commandcode', 'auth.json')
 }
 
-/** Reads the CLI-owned production login without copying or refreshing it. */
+function credentialsFrom(
+  value: unknown,
+  source: CommandCodeCredentials['source']
+): CommandCodeCredentials | null {
+  if (typeof value !== 'string' || !value.trim() || /[\r\n]/.test(value)) {
+    return null
+  }
+  const apiKey = value.trim()
+  return {
+    apiKey,
+    source,
+    identity: createHmac('sha256', IDENTITY_KEY).update(apiKey).digest('hex')
+  }
+}
+
+/** Matches Command Code's environment override before its saved production login. */
 export async function readCommandCodeCredentials(
-  authPath: string
+  authPath: string,
+  environment: NodeJS.ProcessEnv = process.env
 ): Promise<CommandCodeCredentials | null> {
+  const override = environment.COMMAND_CODE_API_KEY
+  if (override !== undefined && override !== '') {
+    // An invalid override must not silently select a different saved account.
+    return credentialsFrom(override, 'environment')
+  }
   try {
     if (!(await lstat(authPath)).isFile()) {
       return null
@@ -25,14 +50,7 @@ export async function readCommandCodeCredentials(
     if (!parsed || typeof parsed !== 'object' || !('apiKey' in parsed)) {
       return null
     }
-    const apiKey = parsed.apiKey
-    if (typeof apiKey !== 'string' || !apiKey.trim() || /[\r\n]/.test(apiKey)) {
-      return null
-    }
-    return {
-      apiKey: apiKey.trim(),
-      identity: createHmac('sha256', IDENTITY_KEY).update(apiKey.trim()).digest('hex')
-    }
+    return credentialsFrom(parsed.apiKey, 'cli-login')
   } catch {
     return null
   }

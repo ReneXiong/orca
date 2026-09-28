@@ -176,7 +176,7 @@ export const getStatusBarToggles = createLocalizedCatalog(
       title: translate('settings.appearance.commandCodeUsageTitle', 'Command Code Usage'),
       description: translate(
         'settings.appearance.commandCodeUsageDescription',
-        'Show Command Code quota from the CLI login on this host.'
+        'Show Command Code quota from an API key or CLI login on this host.'
       ),
       keywords: ['command code', 'quota', 'usage'],
       toggleDescription: translate(

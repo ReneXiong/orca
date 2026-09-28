@@ -2,9 +2,9 @@ import { describe, expect, it } from 'vitest'
 import { isStatusBarItemAvailable } from './status-bar-agent-gating'
 
 describe('isStatusBarItemAvailable', () => {
-  it('gates Command Code usage on the detected CLI', () => {
+  it('allows Command Code API-key usage without an installed CLI', () => {
     expect(isStatusBarItemAvailable('command-code', ['command-code'])).toBe(true)
-    expect(isStatusBarItemAvailable('command-code', ['claude'])).toBe(false)
+    expect(isStatusBarItemAvailable('command-code', [])).toBe(true)
   })
 
   it('shows non-CLI items regardless of detection', () => {

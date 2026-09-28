@@ -1,4 +1,6 @@
 export type RateLimitWindow = {
+  /** True when the denominator comes from a known plan allowance, not the usage response. */
+  estimated?: boolean
   /** Percentage of the window consumed (0–100). */
   usedPercent: number
   /** Window duration in minutes: 300 (5h) or 10080 (7d). */

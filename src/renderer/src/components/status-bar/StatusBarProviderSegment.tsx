@@ -53,7 +53,7 @@ function WindowLabel({
 }): React.JSX.Element {
   return (
     <span className="tabular-nums">
-      {formatUsagePercentageLabel(w.usedPercent, display)}
+      {formatUsagePercentageLabel(w.usedPercent, display, w.estimated)}
       {showLabel ? ` ${label}` : ''}
     </span>
   )

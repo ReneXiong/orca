@@ -195,7 +195,9 @@ export function getWindowSections(
       label:
         p.provider === 'zcode'
           ? translate('auto.components.status.bar.tooltip.zcode.mcp', 'MCP')
-          : translate('auto.components.status.bar.tooltip.7f7f208060', 'Monthly'),
+          : p.monthly.estimated
+            ? translate('statusBar.usage.monthlyEstimate', 'Monthly (estimated)')
+            : translate('auto.components.status.bar.tooltip.7f7f208060', 'Monthly'),
       window: p.monthly
     })
   }
@@ -261,7 +263,7 @@ function ProviderRateLimitWindowSection({
         />
       </div>
       <div className={`flex justify-between ${mutedClass}`}>
-        <span>{formatUsagePercentageLabel(usedPct, usagePercentageDisplay)}</span>
+        <span>{formatUsagePercentageLabel(usedPct, usagePercentageDisplay, window.estimated)}</span>
         {resetLabel && <span>{resetLabel}</span>}
       </div>
     </div>

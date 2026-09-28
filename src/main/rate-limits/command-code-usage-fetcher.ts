@@ -7,8 +7,10 @@ import type {
 import { ensureElectronProxyFromEnvironment } from '../network/proxy-settings'
 import { cancelUnreadResponseBody } from '../lib/unread-response-body'
 import { getCommandCodeAuthPath, readCommandCodeCredentials } from './command-code-auth'
+import { estimateCommandCodeMonthlyUsage } from './command-code-monthly-estimate'
 
 const CREDITS_URL = 'https://api.commandcode.ai/alpha/billing/credits'
+const SUBSCRIPTION_URL = 'https://api.commandcode.ai/alpha/billing/subscriptions'
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return value !== null && typeof value === 'object' && !Array.isArray(value)
@@ -67,22 +69,26 @@ export async function fetchCommandCodeRateLimits(
   const authPath = options.authPath ?? getCommandCodeAuthPath()
   const credentials = await readCommandCodeCredentials(authPath)
   if (!credentials) {
-    return failure('Run command-code login on this host to connect usage.', 'missing-credentials')
+    return failure(
+      'Set COMMAND_CODE_API_KEY or run command-code login on this host.',
+      'missing-credentials'
+    )
   }
   const { apiKey, identity } = credentials
+  const timeout = AbortSignal.timeout(15_000)
+  const signal = options.signal ? AbortSignal.any([options.signal, timeout]) : timeout
   let response: Response
   try {
     await ensureElectronProxyFromEnvironment({
       proxySession: session.defaultSession,
       probeUrl: CREDITS_URL
     })
-    const timeout = AbortSignal.timeout(15_000)
     response = await net.fetch(CREDITS_URL, {
       method: 'GET',
       redirect: 'error',
       credentials: 'omit',
       headers: { Authorization: `Bearer ${apiKey}`, Accept: 'application/json' },
-      signal: options.signal ? AbortSignal.any([options.signal, timeout]) : timeout
+      signal
     })
   } catch {
     return failure('Could not reach Command Code usage.', 'network', identity)
@@ -91,7 +97,7 @@ export async function fetchCommandCodeRateLimits(
     await cancelUnreadResponseBody(response)
     if (response.status === 401 || response.status === 403) {
       return failure(
-        'Command Code authentication failed. Run command-code login on this host.',
+        'Command Code authentication failed. Check COMMAND_CODE_API_KEY or run command-code login.',
         'stale-token',
         identity
       )
@@ -121,7 +127,31 @@ export async function fetchCommandCodeRateLimits(
   if ((windows.fiveHour != null && !sessionWindow) || (windows.weekly != null && !weekly)) {
     return failure('Command Code usage response contains invalid windows.', 'parse', identity)
   }
-  if (!sessionWindow && !weekly) {
+  let subscription: unknown = null
+  try {
+    const response = await net.fetch(SUBSCRIPTION_URL, {
+      method: 'GET',
+      redirect: 'error',
+      credentials: 'omit',
+      headers: { Authorization: `Bearer ${apiKey}`, Accept: 'application/json' },
+      signal
+    })
+    if (response.ok) {
+      subscription = await response.json()
+    } else {
+      await cancelUnreadResponseBody(response)
+    }
+  } catch {
+    // A missing plan must not hide measured rolling windows.
+  }
+  if ((await readCommandCodeCredentials(authPath))?.identity !== identity) {
+    return failure('Command Code login changed. Refresh usage.', 'missing-credentials')
+  }
+  const { monthly, planType } = estimateCommandCodeMonthlyUsage(
+    subscription,
+    record(record(payload)?.credits)?.monthlyCredits
+  )
+  if (!sessionWindow && !weekly && !monthly) {
     return failure(
       'No rolling quota is available for this Command Code account.',
       'usage-unavailable',
@@ -132,12 +162,17 @@ export async function fetchCommandCodeRateLimits(
     provider: 'command-code',
     session: sessionWindow,
     weekly,
+    ...(monthly ? { monthly } : {}),
+    planType,
     updatedAt: Date.now(),
     error: null,
     status: 'ok',
     usageMetadata: {
       source: 'web',
-      credentialSource: 'Command Code CLI login on this host',
+      credentialSource:
+        credentials.source === 'environment'
+          ? 'COMMAND_CODE_API_KEY on this host'
+          : 'Command Code CLI login on this host',
       authProvenance: identity
     }
   }

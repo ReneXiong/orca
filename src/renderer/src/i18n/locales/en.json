@@ -164,7 +164,7 @@
         }
       },
       "commandCodeUsageTitle": "Command Code Usage",
-      "commandCodeUsageDescription": "Show Command Code quota from the CLI login on this host.",
+      "commandCodeUsageDescription": "Show Command Code quota from an API key or CLI login on this host.",
       "commandCodeUsageToggle": "Show Command Code quota usage."
     },
     "browser": {
@@ -18499,5 +18499,10 @@
   },
   "common": {
     "retry": "Retry"
+  },
+  "statusBar": {
+    "usage": {
+      "monthlyEstimate": "Monthly (estimated)"
+    }
   }
 }
