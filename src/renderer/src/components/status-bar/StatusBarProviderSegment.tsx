@@ -109,7 +109,7 @@ export function UsageOverflowChip({
       const tightest = getTightestUsageSection(p)
       const name = getProviderDisplayName(p.provider)
       return tightest
-        ? `${name} ${formatUsagePercentageLabel(tightest.window.usedPercent, display)}`
+        ? `${name} ${formatUsagePercentageLabel(tightest.window.usedPercent, display, tightest.window.estimated)}`
         : name
     })
     .join(', ')
