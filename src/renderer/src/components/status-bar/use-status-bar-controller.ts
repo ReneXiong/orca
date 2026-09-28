@@ -91,19 +91,9 @@ export function useStatusBarController(floatingTerminalOpen: boolean) {
     return null
   }
 
-  const {
-    claude,
-    codex,
-    gemini,
-    opencodeGo,
-    kimi,
-    antigravity,
-    minimax,
-    grok,
-    cursor,
-    zcode,
-    commandCode
-  } = rateLimits
+  const { claude, codex, gemini, opencodeGo, kimi, antigravity, minimax, grok, cursor, zcode } =
+    rateLimits
+  const commandCode = rateLimits.commandCode
 
   // Why: a bar is earned by a live snapshot or durable Settings setup; detection-gating hides per-CLI bars when the agent isn't on PATH.
   // Why: Antigravity has no persisted credential, so a checked status item + detected CLI is the durable "show its slot" signal.
@@ -130,10 +120,7 @@ export function useStatusBarController(floatingTerminalOpen: boolean) {
   const visibleGrok = getVisibleUsageProvider('grok', grok, usageSettings)
   const visibleCursor = getVisibleUsageProvider('cursor', cursor, usageSettings)
   const visibleCommandCode = getVisibleUsageProvider('command-code', commandCode, usageSettings)
-  const showCommandCode =
-    visibleCommandCode !== null &&
-    statusBarItems.includes('command-code') &&
-    isStatusBarItemAvailable('command-code', detectedAgentIds)
+  const showCommandCode = visibleCommandCode !== null && statusBarItems.includes('command-code')
   const visibleZcode = getVisibleUsageProvider('zcode', zcode, usageSettings)
   const showClaude =
     visibleClaude !== null &&
@@ -191,22 +178,7 @@ export function useStatusBarController(floatingTerminalOpen: boolean) {
     showCommandCode
   const anyVisible = hasVisibleUsageMeters || showResourceUsage
   // Why: include Settings so durable managed accounts count — a configured user isn't shown the empty state while snapshots hydrate.
-  const isEmptyUsageState = isUsageEmptyState(
-    {
-      claude,
-      codex,
-      gemini,
-      opencodeGo,
-      kimi,
-      antigravity,
-      minimax,
-      grok,
-      cursor,
-      zcode,
-      commandCode
-    },
-    usageSettings
-  )
+  const isEmptyUsageState = isUsageEmptyState(rateLimits, usageSettings)
   // Why: one-time nudge — once dismissed, stays hidden even if providers reconnect later.
   const showEmptyUsageCta = isEmptyUsageState && !usageEmptyStateDismissed
   const anyFetching =

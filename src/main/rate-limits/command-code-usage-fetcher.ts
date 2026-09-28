@@ -43,11 +43,7 @@ function windowFrom(value: unknown, windowMinutes: number): RateLimitWindow | nu
   }
 }
 
-function failure(
-  error: string,
-  failureKind: UsageRateLimitFailureKind,
-  identity?: string
-): ProviderRateLimits {
+function failure(error: string, failureKind: UsageRateLimitFailureKind): ProviderRateLimits {
   return {
     provider: 'command-code',
     session: null,
@@ -58,7 +54,7 @@ function failure(
       failureKind === 'missing-credentials' || failureKind === 'usage-unavailable'
         ? 'unavailable'
         : 'error',
-    usageMetadata: { source: 'web', failureKind, authProvenance: identity }
+    usageMetadata: { source: 'web', failureKind }
   }
 }
 
@@ -74,7 +70,7 @@ export async function fetchCommandCodeRateLimits(
       'missing-credentials'
     )
   }
-  const { apiKey, identity } = credentials
+  const { apiKey } = credentials
   const timeout = AbortSignal.timeout(15_000)
   const signal = options.signal ? AbortSignal.any([options.signal, timeout]) : timeout
   let response: Response
@@ -91,41 +87,39 @@ export async function fetchCommandCodeRateLimits(
       signal
     })
   } catch {
-    return failure('Could not reach Command Code usage.', 'network', identity)
+    return failure('Could not reach Command Code usage.', 'network')
   }
   if (!response.ok) {
     await cancelUnreadResponseBody(response)
     if (response.status === 401 || response.status === 403) {
       return failure(
         'Command Code authentication failed. Check COMMAND_CODE_API_KEY or run command-code login.',
-        'stale-token',
-        identity
+        'stale-token'
       )
     }
     return failure(
       `Command Code usage request failed (${response.status}).`,
-      response.status === 429 ? 'rate-limited' : 'server',
-      identity
+      response.status === 429 ? 'rate-limited' : 'server'
     )
   }
   let payload: unknown
   try {
     payload = await response.json()
   } catch {
-    return failure('Could not parse Command Code usage.', 'parse', identity)
+    return failure('Could not parse Command Code usage.', 'parse')
   }
   // A login change during the request must not publish the previous account's quota.
-  if ((await readCommandCodeCredentials(authPath))?.identity !== identity) {
+  if ((await readCommandCodeCredentials(authPath))?.apiKey !== apiKey) {
     return failure('Command Code login changed. Refresh usage.', 'missing-credentials')
   }
   const windows = record(record(payload)?.windowLimits)
   if (!windows) {
-    return failure('Command Code usage response has no rolling windows.', 'parse', identity)
+    return failure('Command Code usage response has no rolling windows.', 'parse')
   }
   const sessionWindow = windowFrom(windows.fiveHour, 300)
   const weekly = windowFrom(windows.weekly, 10080)
   if ((windows.fiveHour != null && !sessionWindow) || (windows.weekly != null && !weekly)) {
-    return failure('Command Code usage response contains invalid windows.', 'parse', identity)
+    return failure('Command Code usage response contains invalid windows.', 'parse')
   }
   let subscription: unknown = null
   try {
@@ -144,7 +138,7 @@ export async function fetchCommandCodeRateLimits(
   } catch {
     // A missing plan must not hide measured rolling windows.
   }
-  if ((await readCommandCodeCredentials(authPath))?.identity !== identity) {
+  if ((await readCommandCodeCredentials(authPath))?.apiKey !== apiKey) {
     return failure('Command Code login changed. Refresh usage.', 'missing-credentials')
   }
   const { monthly, planType } = estimateCommandCodeMonthlyUsage(
@@ -154,8 +148,7 @@ export async function fetchCommandCodeRateLimits(
   if (!sessionWindow && !weekly && !monthly) {
     return failure(
       'No rolling quota is available for this Command Code account.',
-      'usage-unavailable',
-      identity
+      'usage-unavailable'
     )
   }
   return {
@@ -172,8 +165,7 @@ export async function fetchCommandCodeRateLimits(
       credentialSource:
         credentials.source === 'environment'
           ? 'COMMAND_CODE_API_KEY on this host'
-          : 'Command Code CLI login on this host',
-      authProvenance: identity
+          : 'Command Code CLI login on this host'
     }
   }
 }

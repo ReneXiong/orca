@@ -1,14 +1,10 @@
-import { createHmac, randomBytes } from 'node:crypto'
 import { lstat } from 'node:fs/promises'
 import { readNodeFileWithinLimit } from '../../shared/node-bounded-file-reader'
 import { homedir } from 'node:os'
 import { join } from 'node:path'
 
-const IDENTITY_KEY = randomBytes(32)
-
 export type CommandCodeCredentials = {
   apiKey: string
-  identity: string
   source: 'environment' | 'cli-login'
 }
 
@@ -26,8 +22,7 @@ function credentialsFrom(
   const apiKey = value.trim()
   return {
     apiKey,
-    source,
-    identity: createHmac('sha256', IDENTITY_KEY).update(apiKey).digest('hex')
+    source
   }
 }
 
