@@ -23,6 +23,8 @@ vi.mock('./opencode-go-usage-source-selection', () => ({ fetchOpenCodeGoUsage: v
 vi.mock('./minimax/minimax-fetcher', () => ({ fetchMiniMaxRateLimits: vi.fn() }))
 vi.mock('./grok-fetcher', () => ({ fetchGrokRateLimits: vi.fn() }))
 vi.mock('./grok-auth', () => ({ readGrokAuthSession: vi.fn(() => ({ status: 'missing' })) }))
+vi.mock('./command-code-usage-fetcher', () => ({ fetchCommandCodeRateLimits: vi.fn() }))
+
 vi.mock('./zcode-usage-fetcher', () => ({ fetchZcodeRateLimits: vi.fn() }))
 
 vi.mock('./cursor-fetcher', () => ({ fetchCursorRateLimits: vi.fn() }))

@@ -7,6 +7,7 @@ import { fetchGeminiRateLimits } from './gemini-usage-fetcher'
 import { fetchKimiRateLimits } from './kimi-fetcher'
 import { fetchMiniMaxRateLimits } from './minimax/minimax-fetcher'
 import { fetchGrokRateLimits } from './grok-fetcher'
+import { fetchCommandCodeRateLimits } from './command-code-usage-fetcher'
 import { fetchZcodeRateLimits } from './zcode-usage-fetcher'
 import { readGrokAuthSession } from './grok-auth'
 import { fetchOpenCodeGoUsage } from './opencode-go-usage-source-selection'
@@ -40,6 +41,8 @@ vi.mock('./kimi-fetcher', () => ({
 vi.mock('./opencode-go-usage-source-selection', () => ({
   fetchOpenCodeGoUsage: vi.fn()
 }))
+
+vi.mock('./command-code-usage-fetcher', () => ({ fetchCommandCodeRateLimits: vi.fn() }))
 
 vi.mock('./zcode-usage-fetcher', () => ({
   fetchZcodeRateLimits: vi.fn()
@@ -76,6 +79,25 @@ function serviceInternals(service: RateLimitService): { fetchAll: () => Promise<
 describe('RateLimitService', () => {
   beforeEach(() => {
     resetRateLimitProviderMocks()
+  })
+
+  it('publishes Command Code quota and clears it after logout or a failed refresh', async () => {
+    vi.mocked(fetchClaudeRateLimits).mockResolvedValue(okProvider('claude', 7))
+    vi.mocked(fetchCodexRateLimits).mockResolvedValue(okProvider('codex', 8))
+    vi.mocked(fetchCommandCodeRateLimits)
+      .mockResolvedValueOnce(okProvider('command-code', 42))
+      .mockResolvedValueOnce(errorProvider('command-code', 'request failed'))
+      .mockResolvedValueOnce({
+        ...errorProvider('command-code', 'login missing'),
+        status: 'unavailable'
+      })
+    const service = new RateLimitService()
+    await serviceInternals(service).fetchAll()
+    expect(service.getState().commandCode?.session?.usedPercent).toBe(42)
+    await serviceInternals(service).fetchAll()
+    expect(service.getState().commandCode?.session).toBeNull()
+    await serviceInternals(service).fetchAll()
+    expect(service.getState().commandCode?.status).toBe('unavailable')
   })
 
   it('publishes a ZCode quota snapshot alongside the other providers', async () => {

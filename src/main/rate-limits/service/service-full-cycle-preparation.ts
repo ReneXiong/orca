@@ -5,6 +5,7 @@ import { fetchGrokRateLimits } from '../grok-fetcher'
 import { readGrokAuthSession } from '../grok-auth'
 import { fetchCursorRateLimits } from '../cursor-fetcher'
 import { readCursorAuthSession } from '../cursor-auth'
+import { fetchCommandCodeRateLimits } from '../command-code-usage-fetcher'
 import { fetchZcodeRateLimits } from '../zcode-usage-fetcher'
 import { fetchMiniMaxRateLimits } from '../minimax/minimax-fetcher'
 import { createHash } from 'node:crypto'
@@ -46,6 +47,7 @@ export type FetchAllCyclePrepared = {
   grokResultPromise: Promise<SettledProviderResult>
   cursorResultPromise: Promise<SettledProviderResult>
   zcodeResultPromise: Promise<SettledProviderResult>
+  commandCodeResultPromise: Promise<SettledProviderResult>
 }
 
 export abstract class RateLimitServiceFullCyclePreparation extends RateLimitServiceFetchPolicy {
@@ -133,7 +135,8 @@ export abstract class RateLimitServiceFullCyclePreparation extends RateLimitServ
         : this.withFetchingStatus(previousState.minimax, 'minimax'),
       grok: this.withFetchingStatus(previousState.grok, 'grok'),
       cursor: this.withFetchingStatus(previousState.cursor, 'cursor'),
-      zcode: this.withFetchingStatus(previousState.zcode, 'zcode')
+      zcode: this.withFetchingStatus(previousState.zcode, 'zcode'),
+      commandCode: this.withFetchingStatus(previousState.commandCode, 'command-code')
     })
 
     // Why: the Cursor probe reads the macOS Keychain, so it is awaited inside the
@@ -147,6 +150,11 @@ export abstract class RateLimitServiceFullCyclePreparation extends RateLimitServ
         (value) => ({ status: 'fulfilled', value }) as const,
         (reason) => ({ status: 'rejected', reason }) as const
       )
+
+    const commandCodeResultPromise = fetchCommandCodeRateLimits({ signal }).then(
+      (value) => ({ status: 'fulfilled', value }) as const,
+      (reason) => ({ status: 'rejected', reason }) as const
+    )
 
     const zcodeResultPromise = fetchZcodeRateLimits({ signal }).then(
       (value) => ({ status: 'fulfilled', value }) as const,
@@ -240,7 +248,8 @@ export abstract class RateLimitServiceFullCyclePreparation extends RateLimitServ
       ],
       grokResultPromise,
       cursorResultPromise,
-      zcodeResultPromise
+      zcodeResultPromise,
+      commandCodeResultPromise
     }
   }
 }

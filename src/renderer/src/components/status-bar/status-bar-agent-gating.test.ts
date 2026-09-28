@@ -2,6 +2,11 @@ import { describe, expect, it } from 'vitest'
 import { isStatusBarItemAvailable } from './status-bar-agent-gating'
 
 describe('isStatusBarItemAvailable', () => {
+  it('gates Command Code usage on the detected CLI', () => {
+    expect(isStatusBarItemAvailable('command-code', ['command-code'])).toBe(true)
+    expect(isStatusBarItemAvailable('command-code', ['claude'])).toBe(false)
+  })
+
   it('shows non-CLI items regardless of detection', () => {
     // Why: ssh, resource-usage, and opencode-go aren't CLIs on PATH, so
     // detection results don't apply.
