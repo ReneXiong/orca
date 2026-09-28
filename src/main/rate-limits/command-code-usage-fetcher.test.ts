@@ -3,7 +3,10 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { net } from 'electron'
-import { fetchCommandCodeRateLimits } from './command-code-usage-fetcher'
+import {
+  fetchCommandCodeRateLimits,
+  validateCommandCodeSnapshot
+} from './command-code-usage-fetcher'
 import { readCommandCodeCredentials } from './command-code-auth'
 import { ensureElectronProxyFromEnvironment } from '../network/proxy-settings'
 
@@ -56,6 +59,25 @@ describe('Command Code CLI usage', () => {
     expect(ensureElectronProxyFromEnvironment).toHaveBeenCalledOnce()
     expect(JSON.stringify(result)).not.toMatch(/test-secret-one|private-user|auth.json/)
   })
+
+  it.each(['switch', 'logout', 'environment override'])(
+    'invalidates a completed snapshot after %s',
+    async (change) => {
+      const snapshot = await fetchCommandCodeRateLimits({ authPath })
+      expect(await validateCommandCodeSnapshot(snapshot)).toBe(snapshot)
+      if (change === 'switch') {
+        await writeFile(authPath, JSON.stringify({ apiKey: 'test-secret-two' }))
+      } else if (change === 'logout') {
+        await rm(authPath)
+      } else {
+        vi.stubEnv('COMMAND_CODE_API_KEY', 'test-env-secret')
+      }
+      const result = await validateCommandCodeSnapshot(snapshot)
+      expect(result).toMatchObject({ status: 'unavailable', session: null, weekly: null })
+      expect(result.monthly).toBeUndefined()
+      expect(JSON.stringify(result)).not.toMatch(/test-secret|test-env-secret/)
+    }
+  )
 
   it('uses an API key without a CLI login file', async () => {
     await rm(authPath)
@@ -111,11 +133,15 @@ describe('Command Code CLI usage', () => {
     expect(net.fetch).not.toHaveBeenCalled()
   })
 
-  it('does not request usage for a missing, oversized, or linked auth file', async () => {
+  it('does not request usage for a missing or oversized auth file', async () => {
     await rm(authPath)
     expect(await readCommandCodeCredentials(authPath)).toBeNull()
     await writeFile(authPath, ' '.repeat(1_000_001))
     expect(await readCommandCodeCredentials(authPath)).toBeNull()
+    expect(net.fetch).not.toHaveBeenCalled()
+  })
+
+  it.skipIf(process.platform === 'win32')('does not read a linked auth file', async () => {
     const link = join(directory, 'link.json')
     await symlink(authPath, link)
     expect(await readCommandCodeCredentials(link)).toBeNull()

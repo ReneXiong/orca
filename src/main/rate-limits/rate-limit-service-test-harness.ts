@@ -11,7 +11,10 @@ import { readGrokAuthSession } from './grok-auth'
 import { fetchCursorRateLimits } from './cursor-fetcher'
 import { readCursorAuthSession } from './cursor-auth'
 import { fetchOpenCodeGoUsage } from './opencode-go-usage-source-selection'
-import { fetchCommandCodeRateLimits } from './command-code-usage-fetcher'
+import {
+  fetchCommandCodeRateLimits,
+  validateCommandCodeSnapshot
+} from './command-code-usage-fetcher'
 import { fetchZcodeRateLimits } from './zcode-usage-fetcher'
 import { hasMiniMaxSessionCookie } from '../minimax/minimax-cookie-store'
 
@@ -102,6 +105,9 @@ export function mockFreshBackgroundProviderFetches(): void {
 
 /** Shared `beforeEach` body: healthy stubs for every provider the service polls. */
 export function resetRateLimitProviderMocks(): void {
+  vi.mocked(validateCommandCodeSnapshot)
+    .mockReset()
+    .mockImplementation(async (snapshot) => snapshot)
   vi.clearAllMocks()
   vi.mocked(fetchGeminiRateLimits).mockResolvedValue(okProvider('gemini', 0, Date.now()))
   vi.mocked(fetchOpenCodeGoUsage).mockResolvedValue(okProvider('opencode-go', 0, Date.now()))

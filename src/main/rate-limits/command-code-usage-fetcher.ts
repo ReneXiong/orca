@@ -12,6 +12,9 @@ import { estimateCommandCodeMonthlyUsage } from './command-code-monthly-estimate
 const CREDITS_URL = 'https://api.commandcode.ai/alpha/billing/credits'
 const SUBSCRIPTION_URL = 'https://api.commandcode.ai/alpha/billing/subscriptions'
 
+// Keep ownership outside the serializable snapshot sent to clients.
+const snapshotCredentials = new WeakMap<ProviderRateLimits, { apiKey: string; authPath: string }>()
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return value !== null && typeof value === 'object' && !Array.isArray(value)
 }
@@ -56,6 +59,20 @@ function failure(error: string, failureKind: UsageRateLimitFailureKind): Provide
         : 'error',
     usageMetadata: { source: 'web', failureKind }
   }
+}
+
+/** Rechecks ownership after sibling requests settle and before reusing a snapshot. */
+export async function validateCommandCodeSnapshot(
+  snapshot: ProviderRateLimits
+): Promise<ProviderRateLimits> {
+  if (!snapshot.session && !snapshot.weekly && !snapshot.monthly) {
+    return snapshot
+  }
+  const owner = snapshotCredentials.get(snapshot)
+  if (!owner || (await readCommandCodeCredentials(owner.authPath))?.apiKey !== owner.apiKey) {
+    return failure('Command Code login changed. Refresh usage.', 'missing-credentials')
+  }
+  return snapshot
 }
 
 /** Fetches the same rolling windows as Command Code's /usage command. */
@@ -151,7 +168,7 @@ export async function fetchCommandCodeRateLimits(
       'usage-unavailable'
     )
   }
-  return {
+  const result: ProviderRateLimits = {
     provider: 'command-code',
     session: sessionWindow,
     weekly,
@@ -168,4 +185,6 @@ export async function fetchCommandCodeRateLimits(
           : 'Command Code CLI login on this host'
     }
   }
+  snapshotCredentials.set(result, { apiKey, authPath })
+  return result
 }

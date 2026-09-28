@@ -5,7 +5,10 @@ import { fetchGrokRateLimits } from '../grok-fetcher'
 import { readGrokAuthSession } from '../grok-auth'
 import { fetchCursorRateLimits } from '../cursor-fetcher'
 import { readCursorAuthSession } from '../cursor-auth'
-import { fetchCommandCodeRateLimits } from '../command-code-usage-fetcher'
+import {
+  fetchCommandCodeRateLimits,
+  validateCommandCodeSnapshot
+} from '../command-code-usage-fetcher'
 import { fetchZcodeRateLimits } from '../zcode-usage-fetcher'
 import { fetchMiniMaxRateLimits } from '../minimax/minimax-fetcher'
 import { createHash } from 'node:crypto'
@@ -116,6 +119,13 @@ export abstract class RateLimitServiceFullCyclePreparation extends RateLimitServ
     }
     const miniMaxGeneration = this.minimaxFetchGeneration
 
+    const previousCommandCode = previousState.commandCode
+      ? await validateCommandCodeSnapshot(previousState.commandCode)
+      : null
+    if (signal.aborted) {
+      return null
+    }
+
     // Mark all providers fetching while keeping previous data visible (Codex is cleared separately on account change).
     this.updateState({
       ...previousState,
@@ -136,7 +146,7 @@ export abstract class RateLimitServiceFullCyclePreparation extends RateLimitServ
       grok: this.withFetchingStatus(previousState.grok, 'grok'),
       cursor: this.withFetchingStatus(previousState.cursor, 'cursor'),
       zcode: this.withFetchingStatus(previousState.zcode, 'zcode'),
-      commandCode: this.withFetchingStatus(previousState.commandCode, 'command-code')
+      commandCode: this.withFetchingStatus(previousCommandCode, 'command-code')
     })
 
     // Why: the Cursor probe reads the macOS Keychain, so it is awaited inside the

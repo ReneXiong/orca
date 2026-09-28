@@ -1,3 +1,4 @@
+import { validateCommandCodeSnapshot } from '../command-code-usage-fetcher'
 import { RateLimitServiceFullCyclePreparation } from './service-full-cycle-preparation'
 import { deriveAntigravityRateLimits } from '../antigravity-usage-mirror'
 import { settleSiblingProviderResult } from './service-sibling-provider-result'
@@ -207,7 +208,12 @@ export abstract class RateLimitServiceFullCycleApplication extends RateLimitServ
     const grok = settleSiblingProviderResult('grok', grokSettled)
     const cursor = settleSiblingProviderResult('cursor', cursorSettled)
     const zcode = settleSiblingProviderResult('zcode', zcodeSettled)
-    const commandCode = settleSiblingProviderResult('command-code', commandCodeSettled)
+    const commandCode = await validateCommandCodeSnapshot(
+      settleSiblingProviderResult('command-code', commandCodeSettled)
+    )
+    if (signal.aborted) {
+      return
+    }
     // Why: the stale policy keeps a recent snapshot through a failed refresh, but
     // a snapshot belonging to a different Cursor account must not survive the
     // switch — the Accounts pane would name the new account beside the old

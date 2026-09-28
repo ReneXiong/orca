@@ -7,7 +7,10 @@ import { fetchGeminiRateLimits } from './gemini-usage-fetcher'
 import { fetchKimiRateLimits } from './kimi-fetcher'
 import { fetchMiniMaxRateLimits } from './minimax/minimax-fetcher'
 import { fetchGrokRateLimits } from './grok-fetcher'
-import { fetchCommandCodeRateLimits } from './command-code-usage-fetcher'
+import {
+  fetchCommandCodeRateLimits,
+  validateCommandCodeSnapshot
+} from './command-code-usage-fetcher'
 import { fetchZcodeRateLimits } from './zcode-usage-fetcher'
 import { readGrokAuthSession } from './grok-auth'
 import { fetchOpenCodeGoUsage } from './opencode-go-usage-source-selection'
@@ -42,7 +45,10 @@ vi.mock('./opencode-go-usage-source-selection', () => ({
   fetchOpenCodeGoUsage: vi.fn()
 }))
 
-vi.mock('./command-code-usage-fetcher', () => ({ fetchCommandCodeRateLimits: vi.fn() }))
+vi.mock('./command-code-usage-fetcher', () => ({
+  fetchCommandCodeRateLimits: vi.fn(),
+  validateCommandCodeSnapshot: vi.fn()
+}))
 
 vi.mock('./zcode-usage-fetcher', () => ({
   fetchZcodeRateLimits: vi.fn()
@@ -97,6 +103,58 @@ describe('RateLimitService', () => {
     await serviceInternals(service).fetchAll()
     expect(service.getState().commandCode?.session).toBeNull()
     await serviceInternals(service).fetchAll()
+    expect(service.getState().commandCode?.status).toBe('unavailable')
+  })
+
+  it('clears a changed account before refresh and validates again after siblings settle', async () => {
+    vi.mocked(fetchClaudeRateLimits).mockResolvedValue(okProvider('claude', 7))
+    vi.mocked(fetchCodexRateLimits).mockResolvedValue(okProvider('codex', 8))
+    const oldSnapshot = okProvider('command-code', 42)
+    vi.mocked(fetchCommandCodeRateLimits).mockResolvedValue(oldSnapshot)
+    const service = new RateLimitService()
+    await serviceInternals(service).fetchAll()
+    expect(service.getState().commandCode?.session?.usedPercent).toBe(42)
+
+    const invalid = {
+      ...errorProvider('command-code', 'login changed'),
+      status: 'unavailable' as const
+    }
+    vi.mocked(validateCommandCodeSnapshot).mockResolvedValue(invalid)
+    const sibling = deferred<ProviderRateLimits>()
+    vi.mocked(fetchZcodeRateLimits).mockReturnValueOnce(sibling.promise)
+    const refreshing = serviceInternals(service).fetchAll()
+    await flushMicrotasks(30)
+    expect(service.getState().commandCode?.session).toBeNull()
+    vi.mocked(validateCommandCodeSnapshot).mockClear()
+    sibling.resolve(okProvider('zcode', 1))
+    await refreshing
+    expect(validateCommandCodeSnapshot).toHaveBeenCalledWith(oldSnapshot)
+    expect(service.getState().commandCode?.session).toBeNull()
+    expect(service.getState().commandCode?.status).toBe('unavailable')
+  })
+
+  it('rechecks a completed Command Code request when a slower sibling finishes', async () => {
+    vi.mocked(fetchClaudeRateLimits).mockResolvedValue(okProvider('claude', 7))
+    vi.mocked(fetchCodexRateLimits).mockResolvedValue(okProvider('codex', 8))
+    const snapshot = okProvider('command-code', 42)
+    vi.mocked(fetchCommandCodeRateLimits).mockResolvedValue(snapshot)
+    const service = new RateLimitService()
+    await serviceInternals(service).fetchAll()
+    const sibling = deferred<ProviderRateLimits>()
+    vi.mocked(fetchZcodeRateLimits).mockReturnValueOnce(sibling.promise)
+    const refreshing = serviceInternals(service).fetchAll()
+    await flushMicrotasks(30)
+    expect(service.getState().commandCode?.session?.usedPercent).toBe(42)
+    expect(fetchCommandCodeRateLimits).toHaveBeenCalledTimes(2)
+    expect(service.getState().commandCode?.status).toBe('ok')
+
+    vi.mocked(validateCommandCodeSnapshot).mockResolvedValue({
+      ...errorProvider('command-code', 'login changed'),
+      status: 'unavailable'
+    })
+    sibling.resolve(okProvider('zcode', 1))
+    await refreshing
+    expect(service.getState().commandCode?.session).toBeNull()
     expect(service.getState().commandCode?.status).toBe('unavailable')
   })
 
