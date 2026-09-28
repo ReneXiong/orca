@@ -394,6 +394,22 @@ describe('resolveTerminalShortcutAction', () => {
     ).toEqual({ type: 'closeActivePane' })
   })
 
+  it('keeps held and remapped copy bindings claimed', () => {
+    const keybindings = { 'terminal.copySelection': ['Mod+Shift+C'] }
+    const cmdC = event({ key: 'c', code: 'KeyC', metaKey: true })
+    expect(resolveTerminalShortcutAction(cmdC, true, 'false', 0, false, keybindings)).toBeNull()
+    expect(
+      resolveTerminalShortcutAction(
+        { ...cmdC, shiftKey: true, repeat: true },
+        true,
+        'false',
+        0,
+        false,
+        keybindings
+      )
+    ).toEqual({ type: 'copySelection' })
+  })
+
   it('applies custom terminal pane keybindings', () => {
     const keybindings = {
       'terminal.clear': ['Ctrl+Alt+K'],

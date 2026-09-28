@@ -2,7 +2,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import type { PaneManager } from '@/lib/pane-manager/pane-manager'
 import { dispatchTerminalShortcutAction } from './terminal-keyboard-action-dispatch'
-import { resolveTerminalShortcutAction } from './terminal-shortcut-policy'
 import { createTerminalNativeOnlyShortcutTracker } from './terminal-native-only-shortcut'
 
 type DispatchContext = Parameters<typeof dispatchTerminalShortcutAction>[3]
@@ -63,28 +62,5 @@ describe('terminal copy shortcut', () => {
   it('copies a selection once and claims the press through its release', () => {
     expect(dispatchCopy('text', false)).toEqual({ claimed: true, copies: 1, releaseClaimed: true })
     expect(dispatchCopy('text', true)).toEqual({ claimed: true, copies: 0, releaseClaimed: false })
-  })
-
-  it('matches held and remapped copy bindings', () => {
-    const keybindings = { 'terminal.copySelection': ['Mod+Shift+C'] }
-    const chord = {
-      key: 'c',
-      code: 'KeyC',
-      metaKey: true,
-      ctrlKey: false,
-      altKey: false,
-      shiftKey: false
-    }
-    expect(resolveTerminalShortcutAction(chord, true, 'false', 0, false, keybindings)).toBeNull()
-    expect(
-      resolveTerminalShortcutAction(
-        { ...chord, shiftKey: true, repeat: true },
-        true,
-        'false',
-        0,
-        false,
-        keybindings
-      )
-    ).toEqual({ type: 'copySelection' })
   })
 })

@@ -21,6 +21,7 @@ const terminalHarness = vi.hoisted(() => ({
     selectAll: ReturnType<typeof vi.fn>
     modes: { bracketedPasteMode: boolean }
     selectionText: string
+    hasSelection: ReturnType<typeof vi.fn>
     customKeyHandler: ((event: KeyboardEvent) => boolean) | null
   }[],
   userInputListener: null as (() => void) | null,
@@ -80,6 +81,7 @@ vi.mock('@xterm/xterm', () => ({
     scrollToBottom = vi.fn()
     selectAll = vi.fn()
     getSelection = vi.fn(() => this.selectionText)
+    hasSelection = vi.fn(() => this.selectionText !== '')
     attachCustomKeyEventHandler = vi.fn((handler: (event: KeyboardEvent) => boolean) => {
       this.customKeyHandler = handler
     })
@@ -382,6 +384,12 @@ describe('AgentTerminalPreview', () => {
     })
     expect(terminal.customKeyHandler!(cmdC('keydown'))).toBe(true)
     expect(terminal.customKeyHandler!(cmdC('keyup'))).toBe(true)
+
+    // A highlight of blank cells copies no text but is still Orca's selection, as in the pane.
+    terminal.hasSelection.mockReturnValue(true)
+    expect(terminal.customKeyHandler!(cmdC('keydown'))).toBe(false)
+    expect(terminal.customKeyHandler!(cmdC('keyup'))).toBe(false)
+    expect(writeTerminalClipboardText).not.toHaveBeenCalled()
 
     terminal.selectionText = 'selected text'
     expect(terminal.customKeyHandler!(cmdC('keydown'))).toBe(false)

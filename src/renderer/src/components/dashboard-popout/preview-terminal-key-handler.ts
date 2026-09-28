@@ -115,7 +115,7 @@ export function installPreviewTerminalKeyHandler(args: {
       if (
         isAppOwnedCopyChord(event, {
           isMac: platform === 'darwin',
-          hasSelection: selection !== '',
+          hasSelection: terminal.hasSelection(),
           kittyKeyboardFlags: args.getShortcutContext().getKittyKeyboardFlags()
         })
       ) {
