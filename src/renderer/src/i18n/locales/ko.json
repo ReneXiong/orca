@@ -496,6 +496,7 @@
           "mimo_code_label": "MiMo Code",
           "muse_label": "Muse",
           "opencode2_label": "OpenCode 2",
+          "codebuddy_label": "CodeBuddy",
           "zcode_label": "ZCode"
         },
         "skill": {
@@ -1602,7 +1603,6 @@
         "reuseExistingBranchHint": "기존 브랜치에서 새 브랜치를 만들지 않고 해당 브랜치를 체크아웃합니다.",
         "createMultiple": "더 만들기",
         "waitForSetupBeforeAgent": "agent를 시작하기 전에 설정이 완료될 때까지 기다리세요.",
-        "waitForSetupBeforeAgentHelp": "설치 프로그램이 시작 중에 agent에 필요한 종속성, MCP 서버 또는 구성 파일을 설치할 때 이 기능을 켜십시오.",
         "destroyDisabled": "비활성화된 파괴",
         "destroyConfigured": "구성된 파괴",
         "noDestroyConfigured": "파괴하지 마세요",
@@ -3033,6 +3033,7 @@
           },
           "TerminalContextMenu": {
             "b4cdd9314e": "화면 지우기",
+            "resetTerminal": "터미널 초기화",
             "8c17d6786d": "창 닫기",
             "copyTerminalId": "터미널 ID 복사",
             "2cf85a6a55": "창 ID 복사",
@@ -7833,8 +7834,7 @@
           "81057d5f71": "저장 중...",
           "da37d6f10e": "복사",
           "3149964b66": "복사됨",
-          "waitForSetupBeforeAgent": "agent를 시작하기 전에 설정이 완료될 때까지 기다리세요.",
-          "waitForSetupBeforeAgentHelp": "설치 프로그램이 시작 중에 agent에 필요한 종속성, MCP 서버 또는 구성 파일을 설치할 때 이 기능을 켜십시오."
+          "waitForSetupBeforeAgent": "agent를 시작하기 전에 설정이 완료될 때까지 기다리세요."
         },
         "RepositoryIconPicker": {
           "2b7d27b93c": "{{value0}} repo 색상 사용",
@@ -17556,6 +17556,7 @@
           "subtitle": "스크립트를 읽을 수 없습니다. 계속 작업하려면 terminal로 다시 전환하세요.",
           "retryingSubtitle": "스크립트를 읽을 수 없습니다. Orca가 계속 다시 불러오기를 시도합니다."
         },
+        "reconnecting": "이 채팅에 다시 연결하는 중…",
         "pairHost": "호스트를 페어링하여 에이전트 채팅 기록을 확인하세요.",
         "notAgent": {
           "title": "여기에는 대화가 없습니다.",
@@ -17680,6 +17681,7 @@
       "railEmptyMessage": "메시지",
       "ask": {
         "awaiting": "사용자 입력을 기다리는 중:",
+        "awaitingUnnamed": "사용자 입력을 기다리는 중",
         "asked": "질문:",
         "questionCount": "{{value0}} 질문"
       },
@@ -17703,7 +17705,9 @@
         "startedN": "{{value0}} 하위 에이전트가 시작되었습니다.",
         "ranOne": "하위 에이전트 1개 실행",
         "ranN": "{{value0}} 하위 에이전트를 실행했습니다.",
-        "tokens": "{{value0}} 토큰"
+        "tokens": "{{value0}} 토큰",
+        "unnamed": "하위 에이전트",
+        "writtenBy": "하위 에이전트 {{value0}}의 출력"
       },
       "conversationCommand": {
         "pendingWork": "이 명령을 사용하기 전에 보류 중인 작업과 메시지가 완료될 때까지 기다리십시오.",
@@ -18067,6 +18071,9 @@
           }
         }
       }
+    },
+    "agentChildRow": {
+      "ended": "종료됨"
     }
   },
   "dashboardPopout": {

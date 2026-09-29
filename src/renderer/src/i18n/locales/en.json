@@ -615,10 +615,12 @@
           "060d152fb5": "Trae",
           "muse_label": "Muse",
           "dsh_label": "DeepSeek Harness",
+          "qoder_label": "Qoder CLI",
           "zcode_label": "ZCode",
           "d443a47995": "Prime Agent",
           "mimo_code_label": "MiMo Code",
-          "opencode2_label": "OpenCode 2"
+          "opencode2_label": "OpenCode 2",
+          "codebuddy_label": "CodeBuddy"
         },
         "skill": {
           "cli": {
@@ -1729,7 +1731,6 @@
         "notConnected": "Not connected",
         "notePasteTooLarge": "Paste is too large for the note field.",
         "waitForSetupBeforeAgent": "Wait for setup to complete before starting agent",
-        "waitForSetupBeforeAgentHelp": "Turn this on when setup installs dependencies, MCP servers, or config files the agent needs during startup.",
         "destroyDisabled": "destroy disabled",
         "destroyConfigured": "destroy configured",
         "noDestroyConfigured": "no destroy",
@@ -3195,6 +3196,7 @@
           },
           "TerminalContextMenu": {
             "b4cdd9314e": "Clear Screen",
+            "resetTerminal": "Reset Terminal",
             "8c17d6786d": "Close Pane",
             "copyTerminalId": "Copy Terminal ID",
             "2cf85a6a55": "Copy Pane ID",
@@ -8056,8 +8058,7 @@
           "81057d5f71": "Saving...",
           "da37d6f10e": "Copy",
           "3149964b66": "Copied",
-          "waitForSetupBeforeAgent": "Wait for setup to complete before starting agent",
-          "waitForSetupBeforeAgentHelp": "Turn this on when setup installs dependencies, MCP servers, or config files the agent needs during startup."
+          "waitForSetupBeforeAgent": "Wait for setup to complete before starting agent"
         },
         "RepositoryIconPicker": {
           "2b7d27b93c": "Use {{value0}} repo color",
@@ -17768,6 +17769,7 @@
           "subtitle": "The transcript could not be read. Toggle back to the terminal to keep working.",
           "retryingSubtitle": "The transcript could not be read. Orca keeps trying to load it."
         },
+        "reconnecting": "Reconnecting to this chat…",
         "pairHost": "Pair a host to view agent chat history.",
         "notAgent": {
           "title": "No conversation here",
@@ -17802,6 +17804,7 @@
       },
       "ask": {
         "awaiting": "Awaiting user input:",
+        "awaitingUnnamed": "Awaiting user input",
         "asked": "Asked:",
         "questionCount": "{{value0}} questions"
       },
@@ -17838,7 +17841,9 @@
         "startedN": "Kicked off {{value0}} subagents",
         "ranOne": "Ran 1 subagent",
         "ranN": "Ran {{value0}} subagents",
-        "tokens": "{{value0}} tokens"
+        "tokens": "{{value0}} tokens",
+        "unnamed": "Subagent",
+        "writtenBy": "Written by subagent {{value0}}"
       },
       "conversationCommand": {
         "pendingWork": "Wait for pending work and messages to finish before using this command.",
@@ -18197,6 +18202,9 @@
           }
         }
       }
+    },
+    "agentChildRow": {
+      "ended": "Ended"
     }
   },
   "dashboardPopout": {
@@ -18503,6 +18511,13 @@
   "statusBar": {
     "usage": {
       "monthlyEstimate": "Monthly (estimated)"
+    }
+  },
+  "terminal": {
+    "sessionSaveFailure": {
+      "title": "Could not save terminal session",
+      "capacity": "The device saving this terminal reported full storage or an exceeded storage quota. Free space on that device, then try again.",
+      "unknown": "Orca could not save the terminal state. Try again. If this continues, share the Orca logs with support so we can identify the cause."
     }
   }
 }

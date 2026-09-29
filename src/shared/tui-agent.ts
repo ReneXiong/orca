@@ -3,6 +3,7 @@
 export type TuiAgent =
   | 'claude' // Claude Code
   | 'claude-agent-teams' // Claude Code Agent Teams via Orca native panes
+  | 'codebuddy' // CodeBuddy Code
   | 'openclaude' // OpenClaude
   | 'codex' // OpenAI Codex
   | 'autohand' // Autohand Code CLI
@@ -11,6 +12,7 @@ export type TuiAgent =
   | 'mimo-code'
   | 'pi' // Pi (pi.dev)
   | 'omp' // OMP (omp.sh)
+  | 'qoder' // Qoder CLI
   | 'gemini' // Gemini CLI
   | 'antigravity' // Google Antigravity CLI
   | 'aider' // Aider

@@ -496,6 +496,7 @@
           "mimo_code_label": "MiMo Code",
           "muse_label": "Muse",
           "opencode2_label": "OpenCode 2",
+          "codebuddy_label": "CodeBuddy",
           "zcode_label": "ZCode"
         },
         "skill": {
@@ -1602,7 +1603,6 @@
         "reuseExistingBranchHint": "检出已有分支，而不是从它创建新分支。",
         "createMultiple": "创建更多",
         "waitForSetupBeforeAgent": "等待设置完成后再启动智能体",
-        "waitForSetupBeforeAgentHelp": "如果设置会安装依赖、MCP 服务器或智能体启动时需要的配置文件，请开启此选项。",
         "destroyDisabled": "已禁用销毁",
         "destroyConfigured": "已配置销毁",
         "noDestroyConfigured": "未配置销毁",
@@ -3033,6 +3033,7 @@
           },
           "TerminalContextMenu": {
             "b4cdd9314e": "清屏",
+            "resetTerminal": "重置终端",
             "8c17d6786d": "关闭窗格",
             "copyTerminalId": "复制终端 ID",
             "2cf85a6a55": "复制窗格 ID",
@@ -7833,8 +7834,7 @@
           "81057d5f71": "保存中...",
           "da37d6f10e": "复制",
           "3149964b66": "已复制",
-          "waitForSetupBeforeAgent": "等待设置完成后再启动智能体",
-          "waitForSetupBeforeAgentHelp": "如果设置会安装依赖、MCP 服务器或智能体启动时需要的配置文件，请开启此选项。"
+          "waitForSetupBeforeAgent": "等待设置完成后再启动智能体"
         },
         "RepositoryIconPicker": {
           "2b7d27b93c": "使用 {{value0}} 仓库颜色",
@@ -17521,6 +17521,7 @@
           "subtitle": "无法读取记录。请切回终端继续工作。",
           "retryingSubtitle": "无法读取记录。Orca 会继续尝试加载。"
         },
+        "reconnecting": "正在重新连接此聊天…",
         "pairHost": "配对主机以查看智能体聊天记录。",
         "notAgent": {
           "title": "这里没有对话",
@@ -17645,6 +17646,7 @@
       "railEmptyMessage": "信息",
       "ask": {
         "awaiting": "等待用户输入：",
+        "awaitingUnnamed": "等待用户输入",
         "asked": "问：",
         "questionCount": "{{value0}} 问题"
       },
@@ -17668,7 +17670,9 @@
         "startedN": "启动 {{value0}} 子代理",
         "ranOne": "Ran 1 子代理",
         "ranN": "Ran {{value0}} 子代理",
-        "tokens": "{{value0}} 代币"
+        "tokens": "{{value0}} 代币",
+        "unnamed": "子代理",
+        "writtenBy": "由子代理 {{value0}} 输出"
       },
       "conversationCommand": {
         "pendingWork": "在使用此命令之前，请等待挂起的工作和消息完成。",
@@ -18067,6 +18071,9 @@
           }
         }
       }
+    },
+    "agentChildRow": {
+      "ended": "已结束"
     }
   },
   "dashboardPopout": {

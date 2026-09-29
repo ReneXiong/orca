@@ -29,6 +29,8 @@ export function handleCodexSessionExit(input: {
     return false
   }
   session.exitObservedAt ??= Date.now()
+  // Before the admission check: the child is gone whether or not its end was admitted.
+  session.turnOpenWaits.releaseAll()
   const event: StructuredAgentSessionEndedEvent = {
     type: 'ended',
     sessionId: input.sessionId,
@@ -56,6 +58,8 @@ export function handleCodexSessionExit(input: {
   session.dispatchEchoes.clear()
   session.backgroundTasks.clear()
   input.onBackgroundTasksChanged?.(input.sessionId, null)
+  // Every close path funnels here, so the session's children end with it on each one.
+  session.backgroundTasks.publishChildWork()
   session.unbindReadingControl?.()
   input.onEvent?.(event)
   session.prompts.clear()

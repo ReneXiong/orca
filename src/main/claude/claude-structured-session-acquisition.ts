@@ -7,8 +7,12 @@ import { CLAUDE_AUTH_SWITCH_IN_PROGRESS_MESSAGE } from '../claude-accounts/envir
 import { isClaudeAuthSwitchInProgress } from '../claude-accounts/live-pty-gate'
 import { openClaudeStreamJsonConnection } from './claude-stream-json-connection'
 import { buildClaudePermissionCallbacks } from './claude-structured-inbound-control'
-import { resolveClaudeReplayTurn } from './claude-structured-dispatch'
-import { readClaudeFrameString, readClaudeInit } from './claude-structured-init-proof'
+import { resolveClaudeReplayTurn } from './claude-replay-turn-resolution'
+import {
+  readClaudeCapabilities,
+  readClaudeFrameString,
+  readClaudeInit
+} from './claude-structured-init-proof'
 import { claudeConfigDirEnvPatch } from './claude-config-dir-pin'
 import { CLAUDE_SPAWN_TOKEN_ENV, claudeProcessIdentity } from './claude-structured-owner-identity'
 import { ClaudePromptRegistry } from './claude-structured-prompt-replies'
@@ -101,6 +105,9 @@ export async function acquireClaudeSession({
         liveSession.reportedOptions.model = init.model
         liveSession.reportedModelMutation = liveSession.optionMutationSequence
       }
+      if (liveSession) {
+        liveSession.capabilities = readClaudeCapabilities(liveSession.capabilities, init.message)
+      }
     }
     observedLeafUuid = readClaudeTranscriptEntryUuid(message) ?? observedLeafUuid
     if (liveSession) {
@@ -111,9 +118,12 @@ export async function acquireClaudeSession({
         persistClaudeTurnResumePoint(sessionId, liveSession, deps)
       }
     }
+    // Settled after the turn this echo opens is emitted: a send read as answered before its turn
+    // lands reads as nothing running, and Stop and Working blink off in between.
+    const settlements: (() => void)[] = []
     const turnOrigin = liveSession
       ? resolveClaudeReplayTurn(liveSession, message, (settlement) =>
-          deps.onDispatchSettledLate?.({ sessionId, ...settlement })
+          settlements.push(() => deps.onDispatchSettledLate?.({ sessionId, ...settlement }))
         )
       : null
     const startsTurn = turnOrigin !== null
@@ -131,6 +141,9 @@ export async function acquireClaudeSession({
         ...observedAt
       })
     )
+    for (const settle of settlements) {
+      settle()
+    }
   }
   const { canUseTool, onUserDialog } = buildClaudePermissionCallbacks({
     sessionId,
